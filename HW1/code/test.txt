@@ -1,0 +1,142 @@
+8763079032 (37.4375161,-122.1751653): label=8763079032
+6575641455 (37.4375095,-122.1754592): label=6575641455
+6575641454 (37.4375154,-122.1755718): label=6575641454
+8763079031 (37.4375063,-122.1751159): label=8763079031
+8763079033 (37.4375312,-122.1752288): label=8763079033
+8763079034 (37.4375571,-122.1753649): label=8763079034
+8763079035 (37.4375679,-122.1755758): label=8763079035
+
+6107399985 (37.4195456,-122.1533281): label=6107399985 direction=forward highway=stop stop=minor traffic_sign=stop
+class NoWaypointsHeuristic(Heuristic):
+    """
+    Returns the minimum distance from `startLocation` to any location with `endTag`,
+    ignoring all waypoints.
+    """
+    def __init__(self, endTag: str, cityMap: CityMap):
+        # Precompute
+        # BEGIN_YOUR_CODE (our solution is 25 lines of code, but don't worry if you deviate from this)
+        self.endTag = endTag
+        self.cityMap = cityMap
+        self.end_locations = []
+        
+        for location, tags in self.cityMap.tags.items():
+            if self.endTag in tags:
+                self.end_locations.append(location)
+        # END_YOUR_CODE
+
+    def evaluate(self, state: State) -> float:
+        # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
+        distances = []
+        for end_location in self.end_locations:
+            pro = ShortestPathProblem(state.location, self.endTag, self.cityMap)
+            distance = UniformCostSearch().solve(pro).pathCost
+            distances.append(distance)
+        return min(distances) if distances else 0
+        # END_YOUR_CODEclass UniformCostSearch(SearchAlgorithm):
+    def __init__(self, verbose: int = 0):
+        super().__init__()
+        self.verbose = verbose
+
+    def solve(self, problem: SearchProblem) -> None:
+        """
+        Run Uniform Cost Search on the specified `problem` instance.
+
+        Sets the following instance variables (see `SearchAlgorithm` docstring).
+            - self.actions: List[str]
+            - self.pathCost: float
+            - self.numStatesExplored: int
+            - self.pastCosts: Dict[str, float]
+
+        *Hint*: Some of these might be really helpful for Problem 3!
+        """
+        self.actions: List[str] = None
+        self.pathCost: float = None
+        self.numStatesExplored: int = 0
+        self.pastCosts: Dict[State, float] = {}
+
+        # Initialize data structures
+        frontier = PriorityQueue()  # Explored states are maintained by the frontier.
+        backpointers = {}           # Map state -> previous state.
+
+        # Add the start state
+        startState = problem.startState()
+        frontier.update(startState, 0.0)
+
+        while True:
+            # Remove the state from the queue with the lowest pastCost (priority).
+            state, pastCost = frontier.removeMin()
+            if state is None and pastCost is None:
+                if self.verbose >= 1:
+                    print("Searched the entire search space!")
+                return
+
+            # Update tracking variables
+            self.pastCosts[state.location] = pastCost
+            self.numStatesExplored += 1
+            if self.verbose >= 2:
+                print(f"Exploring {state} with pastCost {pastCost}")
+
+            # Check if we've reached an end state; if so, extract solution.
+            if problem.isEnd(state):
+                self.actions = []
+                while state != startState:
+                    action, prevState = backpointers[state]
+                    self.actions.append(action)
+                    state = prevState
+                self.actions.reverse()
+                self.pathCost = pastCost
+                if self.verbose >= 1:
+                    print(f"numStatesExplored = {self.numStatesExplored}")
+                    print(f"pathCost = {self.pathCost}")
+                    print(f"actions = {self.actions}")
+                return
+
+            # Expand from `state`, updating the frontier with each `newState`
+            for action, newState, cost in problem.successorsAndCosts(state):
+                if self.verbose >= 3:
+                    print(f"\t{state} => {newState} (Cost: {pastCost} + {cost})")
+
+                if frontier.update(newState, pastCost + cost):
+                    # We found better way to go to `newState` --> update backpointer!
+                    backpointers[newState] = (action, state)
+
+如何修改========== START GRADING
+----- START PART 3c-astar-1-basic: basic no waypoints heuristic A* on Stanford map (3c-astar-1)
+FAIL: Exception thrown: <class 'AttributeError'> -- 'NoneType' object has no attribute 'pathCost'
+Exception thrown: <class 'AttributeError'> -- 'NoneType' object has no attribute 'pathCost'
+FAIL:   File "F:\Desktop\Learning\Computer\AI\HW1\code\grader.py", line 730, in <lambda>
+    lambda: t_3c_aStar(
+
+  File "F:\Desktop\Learning\Computer\AI\HW1\code\grader.py", line 730, in <lambda>
+    lambda: t_3c_aStar(
+
+FAIL:   File "F:\Desktop\Learning\Computer\AI\HW1\code\grader.py", line 718, in t_3c_aStar
+    ucs.solve(aStarProblem)
+
+  File "F:\Desktop\Learning\Computer\AI\HW1\code\grader.py", line 718, in t_3c_aStar
+    ucs.solve(aStarProblem)
+
+FAIL:   File "F:\Desktop\Learning\Computer\AI\HW1\code\util.py", line 144, in solve
+    for action, newState, cost in problem.successorsAndCosts(state):
+
+  File "F:\Desktop\Learning\Computer\AI\HW1\code\util.py", line 144, in solve
+    for action, newState, cost in problem.successorsAndCosts(state):
+
+FAIL:   File "F:\Desktop\Learning\Computer\AI\HW1\code\submission.py", line 186, in successorsAndCosts
+    newCost = cost + heuristic.evaluate(nextState) - heuristic.evaluate(state)
+
+  File "F:\Desktop\Learning\Computer\AI\HW1\code\submission.py", line 186, in successorsAndCosts
+    newCost = cost + heuristic.evaluate(nextState) - heuristic.evaluate(state)
+
+FAIL:   File "F:\Desktop\Learning\Computer\AI\HW1\code\submission.py", line 252, in evaluate
+    distance = UniformCostSearch().solve(pro).pathCost
+
+  File "F:\Desktop\Learning\Computer\AI\HW1\code\submission.py", line 252, in evaluate
+    distance = UniformCostSearch().solve(pro).pathCost
+
+----- END PART 3c-astar-1-basic [took 0:00:00.031929 (max allowed 2 seconds), 0/1.5 points]
+
+Note that the hidden test cases do not check for correctness.
+They are provided for you to verify that the functions do not crash and run within the time limit.
+Points for these parts not assigned by the grader (indicated by "--").
+========== END GRADING [0/1.5 points + 0/0 extra credit]

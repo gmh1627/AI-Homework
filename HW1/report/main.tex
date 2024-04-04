@@ -1,0 +1,282 @@
+%!TEX program = xelatex
+\documentclass{article}
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[UTF8]{ctex}
+\usepackage[tc]{titlepic}
+\usepackage{titlesec}
+\usepackage{cite}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage[section]{placeins}
+\usepackage{makeidx}
+\usepackage{mathrsfs}
+\usepackage{color}
+\usepackage{ulem}
+\usepackage{enumitem}
+\geometry{a4paper,scale=0.8}
+\pagestyle{fancy}
+
+\usepackage{hyperref}
+\hypersetup{hypertex=true, colorlinks=true, linkcolor=blue, anchorcolor=blue, citecolor=blue}
+
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+}
+
+\lhead{第 1 次作业\\\today}
+\chead{中国科学技术大学\\	DS4001 人工智能原理与技术}
+
+\rhead{Homework 1\\ {\CTEXoptions[today=old]\today}}
+\newcommand{\upcite}[1]{\textsuperscript{\cite{#1}}}
+
+\titleformat*{\section}{\bfseries\Large}
+\titleformat*{\subsection}{\bfseries\large}
+
+\title{\bfseries 第一次作业（搜索问题）}
+\author{高茂航  \quad  PB22061161}
+
+\begin{document}
+\maketitle
+\textcolor{red}{\textbf{本次作业需独立完成，不允许任何形式的抄袭行为，如被发现会有相应惩罚。在上方修改你的姓名学号，说明你同意本规定。}}
+% \clearpage
+
+\section*{问题0：引入（30 分）}
+\subsection*{1.最短路径问题（12分）}
+\subsubsection*{a.回答问题（2分）}
+\textcolor{red}{TODO}
+
+\subsubsection*{b.证明（2分）}
+\textcolor{red}{TODO}
+
+\subsubsection*{c.证明（4分）}
+\textcolor{red}{TODO}
+
+\subsubsection*{d.回答问题（2分）}
+\textcolor{red}{TODO}
+
+\subsubsection*{e.证明（2分）}
+\textcolor{red}{TODO}
+
+\subsection*{2.A*算法，判断对错并说明原因（10分）}
+
+\begin{enumerate}
+    \item[a] \textcolor{red}{TODO}
+    \item[b] \textcolor{red}{TODO}
+    \item[c] \textcolor{red}{TODO}
+    \item[d] \textcolor{red}{TODO}
+    \item[e] \textcolor{red}{TODO}
+\end{enumerate}
+
+\subsection*{3.网格城市（8 分）}
+
+\subsection*{a.回答问题（8分）}
+\textcolor{red}{TODO}
+
+
+
+\section*{问题1：查找最短路径（12分）}
+\subsection*{a.代码实现ShortestPathProblem部分（8分）}
+\begin{lstlisting}
+class ShortestPathProblem(SearchProblem):
+    """The illustration and __init___ part is ommited here."""
+
+    def startState(self) -> State:
+        # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
+        return State(location=self.startLocation, memory=None)
+        # END_YOUR_CODE
+
+    def isEnd(self, state: State) -> bool:
+        # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
+        return self.endTag in self.cityMap.tags[state.location]
+        # END_YOUR_CODE
+
+    def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
+        # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
+        successors = []
+        for neighbor, cost in self.cityMap.distances[state.location].items():
+            new_state = State(location=neighbor, memory=None)
+            successors.append((neighbor, new_state, cost))
+        return successors
+        # END_YOUR_CODE
+\end{lstlisting}
+
+\subsection*{b.路线可视化（4分）}
+\subsubsection*{1.比较有趣的路线}
+\begin{lstlisting}
+startLocation = "8763079035"
+endTag = "label=6107399985"
+\end{lstlisting}
+\begin{figure}[H]
+	\centering 
+	\includegraphics[height=6cm,width=14cm]{1.png}
+    \caption{比较有趣的路线}
+\end{figure}
+这条路线从校园的西北角穿到东南角，经过的地点比较多。
+\subsubsection*{2.比较短而无聊的路线}
+    \begin{lstlisting}
+startLocation = "8763079035"
+endTag = "entrance=yes"
+    \end{lstlisting}
+	
+	\begin{figure}[H]
+		\centering 
+		\includegraphics[height=6cm,width=14cm]{3.png}
+        \caption{比较短而无聊的路线}
+    \end{figure}
+这条路线从校园西北角通到有入口的地方，比较短，但确实符合要求，如果我希望去更远处的入口，应该换一个更特别的标签来建模。
+
+\section*{问题2：查找带无序途径点的最短路径（20分）}
+\subsection*{a.代码实现WaypointsShortestPathProblem部分（12分）}
+ 
+ \begin{lstlisting}
+class WaypointsShortestPathProblem(SearchProblem):
+    """The illustration and __init___ part is ommited here."""
+
+    def startState(self) -> State:
+        # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
+        return State(location=self.startLocation, memory=frozenset())
+        # END_YOUR_CODE
+
+    def isEnd(self, state: State) -> bool:
+        # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
+        return self.endTag in self.cityMap.tags[state.location] and all(tag in state.memory for tag in self.waypointTags)
+        # END_YOUR_CODE
+
+    def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
+        # BEGIN_YOUR_CODE (our solution is 17 lines of code, but don't worry if you deviate from this)
+        successors = []
+        for nextLocation, distance in self.cityMap.distances[state.location].items():
+            memory = set(state.memory)
+            for tag in self.cityMap.tags[state.location]:
+                if tag in self.waypointTags:
+                    memory.add(tag)
+        
+            new_state = State(location=nextLocation, memory=frozenset(memory))
+            successors.append((nextLocation,new_state,distance))
+        return successors
+        # END_YOUR_CODE
+\end{lstlisting}
+
+\subsection*{b.回答问题（4分）}
+$n2^{k}$,k个标签的集合有
+
+\subsection*{c.可视化（4分）}
+\begin{lstlisting}
+    startLocation = "8763079035"
+    endTag = "label=6107399985"
+    \end{lstlisting}
+\begin{figure}[H]
+    \centering 
+    \includegraphics[height=6cm,width=14cm]{1.png}
+    \caption{1b中第一条路线}
+    \end{figure}
+\begin{lstlisting}
+waypointTags = ["crossing=uncontrolled", "bicycle=yes", "foot=yes", "kerb=lowered", "traffic_sign=stop"]
+\end{lstlisting}
+\begin{figure}[H]
+	\centering 
+	\includegraphics[height=6cm,width=14cm]{2.png}
+    \caption{1b中第一条路线加了途径点后的结果}
+	\end{figure}
+    这张图的路径经过了指定的途径点，使得路径比1b的更长，但能去到更多地方。
+\section*{问题3：使用 A*算法加快搜索速度（28分）}
+\subsection*{a.代码实现aStarReduction的NewSearchProblem部分（8分）}
+
+\begin{lstlisting}
+def aStarReduction(problem: SearchProblem, heuristic: Heuristic) -> SearchProblem:
+    class NewSearchProblem(SearchProblem):
+        def startState(self) -> State:
+            # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
+            return problem.startState()
+            # END_YOUR_CODE
+
+        def isEnd(self, state: State) -> bool:
+            # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
+            return problem.isEnd(state)
+            # END_YOUR_CODE
+
+        def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
+            # BEGIN_YOUR_CODE (our solution is 8 lines of code, but don't worry if you deviate from this)
+            successors = []
+            for action, nextState, cost in problem.successorsAndCosts(state):
+                newCost = cost + heuristic.evaluate(nextState) - heuristic.evaluate(state)
+                successors.append((action, nextState, newCost))
+            return successors
+            # END_YOUR_CODE
+
+    return NewSearchProblem()
+\end{lstlisting}
+
+\subsection*{b.代码实现StraightLineHeuristic部分（8分）}
+
+\begin{lstlisting}
+class StraightLineHeuristic(Heuristic):
+
+    def __init__(self, endTag: str, cityMap: CityMap):
+        self.endTag = endTag
+        self.cityMap = cityMap
+        # Precompute
+        # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
+        self.end_locations = []
+        for location, tags in self.cityMap.tags.items():
+            if self.endTag in tags:
+                self.end_locations.append(location)
+        # END_YOUR_CODE
+
+    def evaluate(self, state: State) -> float:
+        # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
+        distances = []
+        for end_location in self.end_locations:
+            distance = computeDistance(self.cityMap.geoLocations[state.location], self.cityMap.geoLocations[end_location])
+            distances.append(distance)
+        return min(distances) if distances else 0
+        # END_YOUR_CODE
+\end{lstlisting}
+
+\subsection*{c.代码实现NoWaypointsHeuristic部分（12分）}
+\begin{lstlisting}
+class NoWaypointsHeuristic(Heuristic):
+    
+    def __init__(self, endTag: str, cityMap: CityMap):
+        # Precompute
+        # BEGIN_YOUR_CODE (our solution is 25 lines of code, but don't worry if you deviate from this)
+        self.endTag = endTag
+        self.cityMap = cityMap
+        self.locations = list(self.cityMap.geoLocations.keys())
+        self.end_locations = [location for location, tags in self.cityMap.tags.items() if self.endTag in tags]
+        self.shortest_paths = {}
+        for location1 in self.end_locations:
+            problem = ShortestPathProblem(location1, "label=0", cityMap)
+            ucs = UniformCostSearch()
+            ucs.solve(problem)
+            for location2, cost in ucs.pastCosts.items():
+                self.shortest_paths[(location2, location1)] = cost
+        # END_YOUR_CODE
+
+    def evaluate(self, state: State) -> float:
+        # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
+        distances = [self.shortest_paths[(state.location, end_location)] for end_location in self.end_locations]
+        return min(distances) if distances else 0
+        # END_YOUR_CODE
+\end{lstlisting}
+
+
+\section*{反馈（10分）}
+
+\begin{itemize}
+    \item 这次作业花了几天的空闲时间，主要用于看代码和思考3c。看代码的过程感觉比较困难，可能是因为内容比较多，但看明白后做得就很快了。3c的想法过于巧妙，很难想到;
+    \item 感觉上课时讲得比较快，不太好消化，课后还要自己学很久，而且自己对相关代码也不够熟练。
+\end{itemize}
+
+\end{document}

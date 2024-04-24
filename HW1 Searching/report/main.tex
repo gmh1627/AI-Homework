@@ -54,37 +54,51 @@
 \section*{问题0：引入（30 分）}
 \subsection*{1.最短路径问题（12分）}
 \subsubsection*{a.回答问题（2分）}
-\textcolor{red}{TODO}
-
+$\mathcal{D}_1 \circ d_{v_1}(v_2)=d_{v_1}(v_2)=10$
 \subsubsection*{b.证明（2分）}
-\textcolor{red}{TODO}
+若$\mathcal{D}_k \circ d_{s}(v_k)=min_{v \in V-\{v_0,...v_{k-1}\}}\{d_s(v)+w_{vv_k}\}\neq d_s(v_k)=min_{v\in V}\{d_s(v)+w_{vv_k}\}$，
+
+则$\exists h \in \{v_{k+1},v_{k+2},...,v_{n}\}$，使得$\mathcal{D}_k \circ d(v_k)=d_s(h)\leqslant d_s(v_k)$，即h是到s第k近点，与假设矛盾。
 
 \subsubsection*{c.证明（4分）}
-\textcolor{red}{TODO}
+$k=0$时显然成立。
+
+设$k-1$时成立，即$\mathcal{D}_{k-1} \circ d(v_{k-1})\leqslant min_{v \in V-\{v_0,...v_{k-2}\}}d(v)$，
+
+假如$\mathcal{D}_{k} \circ d(v_k)> min_{v \in V-\{v_0,...v_{k-1}\}}d(v)$，
+则$\exists h,j \in \{v_{0},v_{1},...,v_{k-1}\}$，并在$d_s(h)+d_h(v_k)>d_s(j)+d_j(v_k)$时将$d_s(v_k)$更新为$d_s(h)+d_h(v_k)$，与假设矛盾。
 
 \subsubsection*{d.回答问题（2分）}
-\textcolor{red}{TODO}
-
+$\mathcal{D}_{k}$表示选取$min_{v \in V-\{v_0,...v_{k-1}\}}d(v)$对应的点作为$v_k$，并用$v_k$更新$d(v),v\in V-\{v_0,...v_{k}\}$。
+算符每作用一次就将未求得最短路径的点集减少一个，直到所有点都求得最短路径。
+该算符的本质思想是使$d(v)$逐渐减小到$d_s(v)$。
 \subsubsection*{e.证明（2分）}
-\textcolor{red}{TODO}
+
+若$d_s(u)\neq min_{v \in V}\{d_s(v)+w_{vu}\}$，
+
+则设$d_s(u)=l_s(v)+w_{vu}$，其中$l_s(v)$是s到v的一条非最短路径，
+
+又因为$l_s(v)+w_{vu}>d_s(v)+w_{vu}$，所以$l_s(v)+w_{vu}$不是s到u的最短路径，与假设矛盾。
+$\exists v_1 \in V$，使得$d_s(u)=d_s(v_1)+w_{v_1u}>min_{v \in V}\{d_s(v)+w_{vu}\}=d_1$，
+即$d_s(u)$不是最短路径长度，与假设矛盾。
 
 \subsection*{2.A*算法，判断对错并说明原因（10分）}
 
 \begin{enumerate}
-    \item[a] \textcolor{red}{TODO}
-    \item[b] \textcolor{red}{TODO}
-    \item[c] \textcolor{red}{TODO}
-    \item[d] \textcolor{red}{TODO}
-    \item[e] \textcolor{red}{TODO}
+    \item[a] 正确，因为Dijkstra算法就是不考虑启发函数下的$A^*$算法。
+    \item[b] 正确，因为h(u)可能会影响要选择哪一个点，进而影响d(u)的更新。
+    \item[c] 错误，因为d(u)都是基于各点之间的距离来更新的，因此即使用了h(u)也不存在某个d(u)不是某条路径长度的情况。
+    \item[d] 正确，使用优先队列（通常是二叉堆）取每个节点的时间复杂度是$O(logn)$，所以总时间复杂度是$O(nlogn)$，对所有节点则为$O(nlogn)$，边数为m，所以总时间复杂度是$O(nlogn+m)$。
+    \item[e] 正确，因为若$d_s(u) + h(u)\leqslant  d_s(v) + h(v)\rightarrow d_s(u)\leqslant  d_s(v)$，则h(u)对选点的判断没有影响，即选点顺序和Dijikstra算法一样。
 \end{enumerate}
 
 \subsection*{3.网格城市（8 分）}
 
 \subsection*{a.回答问题（8分）}
-\textcolor{red}{TODO}
 
+$m \geqslant 0$时，最低成本路线唯一，即先y轴从原点走到(0,n)，再从(0,n)走到(m,n)，最低成本为$\lvert n \rvert+m+\frac{(1+m)m}{2}=\lvert n \rvert+\frac{(3+m)m}{2}$。
 
-
+$m < 0$时，最低成本路线不唯一，只需做到总步数为$\lvert n \rvert+\lvert m \rvert$即可，最低成本为$\lvert n \rvert+\lvert m \rvert$。
 \section*{问题1：查找最短路径（12分）}
 \subsection*{a.代码实现ShortestPathProblem部分（8分）}
 \begin{lstlisting}
@@ -169,7 +183,7 @@ class WaypointsShortestPathProblem(SearchProblem):
 \end{lstlisting}
 
 \subsection*{b.回答问题（4分）}
-$n2^{k}$,k个标签的集合有
+$n2^{k}$,k个标签的集合有$2^{k}$种可能状态，当每个点都遍历所有可能状态时即UCS可访问的最大状态数。
 
 \subsection*{c.可视化（4分）}
 \begin{lstlisting}

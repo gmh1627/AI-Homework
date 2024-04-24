@@ -1,0 +1,169 @@
+%!TEX program = xelatex
+\documentclass{article}
+\usepackage{amsthm,amsmath,amssymb}
+\usepackage[UTF8]{ctex}
+\usepackage[tc]{titlepic}
+\usepackage{titlesec}
+\usepackage{cite}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage[section]{placeins}
+\usepackage{makeidx}
+\usepackage{mathrsfs}
+\usepackage{color}
+\usepackage{ulem}
+\usepackage{enumitem}
+\geometry{a4paper,scale=0.8}
+\pagestyle{fancy}
+
+\usepackage{hyperref}
+\hypersetup{hypertex=true, colorlinks=true, linkcolor=blue, anchorcolor=blue, citecolor=blue}
+
+\usepackage{listings}
+\lstset{
+    language=Python,
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+}
+
+\lhead{第 2 次作业\\\today}
+\chead{中国科学技术大学\\	DS4001 人工智能原理与技术}
+
+\rhead{Homework 2\\ {\CTEXoptions[today=old]\today}}
+\newcommand{\upcite}[1]{\textsuperscript{\cite{#1}}}
+
+\titleformat*{\section}{\bfseries\Large}
+\titleformat*{\subsection}{\bfseries\large}
+
+\title{\bfseries 第二次作业（强化学习）}
+\author{xxx  \quad  PB22000000}
+
+\begin{document}
+\maketitle
+\textcolor{red}{\textbf{本次作业需独立完成，不允许任何形式的抄袭行为，如被发现会有相应惩罚。在上方修改你的姓名学号，说明你同意本规定。}}
+% \clearpage
+
+\section*{问题1：热身（10分）}
+\subsection*{a.计算（5分）}
+\textcolor{red}{TODO}
+
+\subsection*{b.计算（5分）}
+\textcolor{red}{TODO}
+
+
+
+
+\section*{问题2：Q-Learning（15分）}
+\subsection*{a.回答问题（2分）}
+\textcolor{red}{TODO} 
+
+\subsection*{b.计算（8分）}
+\textcolor{red}{TODO}
+
+\subsection*{c.回答问题（5分）}
+\textcolor{red}{TODO}
+
+
+\section*{问题3：Gobang Programming（55分）}
+\subsection*{a.回答问题（2分）}
+\textcolor{red}{TODO}
+
+\subsection*{b.代码填空（33分）}
+\textcolor{red}{TODO} 
+\begin{lstlisting}
+class Gobang(UtilGobang):
+    
+    def get_next_state(self, action: Tuple[int, int, int], noise: Tuple[int, int, int]) -> np.array:
+
+        # BEGIN_YOUR_CODE (our solution is 3 line of code, but don't worry if you deviate from this)
+        
+        # END_YOUR_CODE
+
+        if noise is not None:
+            white, x_white, y_white = noise
+            next_state[x_white][y_white] = white
+        return next_state
+
+    def sample_noise(self) -> Union[Tuple[int, int, int], None]:
+
+        if self.action_space:
+            # BEGIN_YOUR_CODE (our solution is 2 line of code, but don't worry if you deviate from this)
+            
+            # END_YOUR_CODE
+            return 2, x, y
+        else:
+            return None
+
+    def get_connection_and_reward(self, action: Tuple[int, int, int],
+                                  noise: Tuple[int, int, int]) -> Tuple[int, int, int, int, float]:
+
+        # BEGIN_YOUR_CODE (our solution is 4 line of code, but don't worry if you deviate from this)
+        
+        # END_YOUR_CODE
+
+        return black_1, white_1, black_2, white_2, reward
+
+    def sample_action_and_noise(self, eps: float) -> Tuple[Tuple[int, int, int], Tuple[int, int, int]]:
+
+        # BEGIN_YOUR_CODE (our solution is 8 line of code, but don't worry if you deviate from this)
+
+        # END_YOUR_CODE
+        return action, self.sample_noise()
+
+    def q_learning_update(self, s0_: np.array, action: Tuple[int, int, int], s1_: np.array, reward: float,
+                          alpha_0: float = 1):
+
+        s0, s1 = self.array_to_hashable(s0_), self.array_to_hashable(s1_)
+        self.s_a_visited[(s0, action)] = 1 if (s0, action) not in self.s_a_visited else \
+            self.s_a_visited[(s0, action)] + 1
+        alpha = alpha_0 / self.s_a_visited[(s0, action)]
+
+        # BEGIN_YOUR_CODE (our solution is 18 line of code, but don't worry if you deviate from this)
+        
+        # END_YOUR_CODE
+
+
+\end{lstlisting}
+
+
+
+\subsection*{c.结果复现（10分）}
+\textcolor{red}{TODO}
+你需要将复现结果的截图粘贴在这里。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=5cm]{pics/temp.jpg}
+    \caption{复现结果}
+    \label{fig:indesirable_solution}
+\end{figure}
+图~\ref{fig:indesirable_solution}是一张示例图片，请你按照示例插入图片以及文字叙述。
+
+\subsection*{d.回答问题（10分）}
+\textcolor{red}{TODO}
+
+\section*{问题4：Deeper Understanding（10分）}
+\subsection*{a.回答问题（5分）}
+\textcolor{red}{TODO}
+
+\subsection*{b.回答问题（5分）}
+\textcolor{red}{TODO}
+
+
+\section*{反馈（10分）}
+在每次实验报告的最后欢迎反馈你上这门课的感受，你可以写下任何反馈，包括但不限于以下几个方面：课堂、作业难度和工作量、助教工作等等。
+
+\textcolor{red}{TODO} % 你可以先注释掉上面那段话
+\begin{itemize}
+    \item ......
+    \item ......
+\end{itemize}
+
+\end{document}

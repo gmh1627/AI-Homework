@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 from mapUtil import (
     CityMap,
@@ -38,27 +38,21 @@ class ShortestPathProblem(SearchProblem):
 
     def startState(self) -> State:
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        return State(location = self.startLocation,  memory = None)
-        # raise Exception("Not implemented yet")
+        return State(location=self.startLocation, memory=None)
         # END_YOUR_CODE
 
     def isEnd(self, state: State) -> bool:
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        if self.endTag in self.cityMap.tags[state.location]:
-            return 1
-        else:
-            return 0
-        # raise Exception("Not implemented yet")
+        return self.endTag in self.cityMap.tags[state.location]
         # END_YOUR_CODE
 
     def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
         # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
         successors = []
-        for new_state_label, distance in self.cityMap.distances[state.location].items():
-            new_state = State(location=new_state_label, memory=None)
-            successors.append((new_state_label, new_state, distance))
+        for neighbor, cost in self.cityMap.distances[state.location].items():
+            new_state = State(location=neighbor, memory=None)
+            successors.append((neighbor, new_state, cost))
         return successors
-        # raise Exception("Not implemented yet")
         # END_YOUR_CODE
 
 
@@ -85,9 +79,9 @@ def getStanfordShortestPathProblem() -> ShortestPathProblem:
     # cityMap = createCustomMap("data/custom.pbf", "data/custom-landmarks".json")
 
     # BEGIN_YOUR_CODE (our solution is 2 lines of code, but don't worry if you deviate from this)
-    # raise Exception("Not implemented yet")
-    startLocation = locationFromTag(makeTag("landmark", "gates"), cityMap)
-    endTag = makeTag("landmark", "green_library")
+    startLocation = "8763079035"
+    #endTag = "label=6107399985"
+    endTag = "entrance=yes"
     # END_YOUR_CODE
     return ShortestPathProblem(startLocation, endTag, cityMap)
 
@@ -116,29 +110,26 @@ class WaypointsShortestPathProblem(SearchProblem):
 
     def startState(self) -> State:
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        # raise Exception("Not implemented yet")
-        visited_if = tuple(([0 for _ in range(len(self.waypointTags))]))
-        return State(location=self.startLocation, memory=visited_if)
+        return State(location=self.startLocation, memory=frozenset())
         # END_YOUR_CODE
 
     def isEnd(self, state: State) -> bool:
         # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-        # raise Exception("Not implemented yet")
-        if self.endTag in self.cityMap.tags[state.location]:
-            if all(element == 1 for element in state.memory):
-                return 1
-        return 0
+        return self.endTag in self.cityMap.tags[state.location] and all(tag in state.memory for tag in self.waypointTags)
         # END_YOUR_CODE
 
     def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
         # BEGIN_YOUR_CODE (our solution is 17 lines of code, but don't worry if you deviate from this)
         successors = []
-        for new_state_label, distance in self.cityMap.distances[state.location].items():
-            new_memory = tuple(int(state.memory[i] or self.waypointTags[i] in self.cityMap.tags[new_state_label]) for i in range(len(self.waypointTags)))
-            new_state = State(location=new_state_label, memory=new_memory)
-            successors.append((new_state_label, new_state, distance))
+        for nextLocation, distance in self.cityMap.distances[state.location].items():
+            memory = set(state.memory)
+            for tag in self.cityMap.tags[state.location]:
+                if tag in self.waypointTags:
+                    memory.add(tag)
+        
+            new_state = State(location=nextLocation, memory=frozenset(memory))
+            successors.append((nextLocation,new_state,distance))
         return successors
-        # raise Exception("Not implemented yet")
         # END_YOUR_CODE
 
 
@@ -156,10 +147,9 @@ def getStanfordWaypointsShortestPathProblem() -> WaypointsShortestPathProblem:
     """
     cityMap = createStanfordMap()
     # BEGIN_YOUR_CODE (our solution is 4 lines of code, but don't worry if you deviate from this)
-    # raise Exception("Not implemented yet")
     startLocation = "8763079035"
-    endTag = makeTag("landmark", "green_library")
-    waypointTags = [makeTag("amenity", "food"), makeTag("landmark", "tressider"), makeTag("landmark", "stanford_stadium")]
+    waypointTags = ["crossing=uncontrolled", "bicycle=yes", "foot=yes", "kerb=lowered", "traffic_sign=stop"]
+    endTag = "label=6107399985"
     # END_YOUR_CODE
     return WaypointsShortestPathProblem(startLocation, waypointTags, endTag, cityMap)
 
@@ -181,24 +171,20 @@ def aStarReduction(problem: SearchProblem, heuristic: Heuristic) -> SearchProble
     class NewSearchProblem(SearchProblem):
         def startState(self) -> State:
             # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-            # raise Exception("Not implemented yet")
             return problem.startState()
             # END_YOUR_CODE
 
         def isEnd(self, state: State) -> bool:
             # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-            # raise Exception("Not implemented yet")
             return problem.isEnd(state)
             # END_YOUR_CODE
 
         def successorsAndCosts(self, state: State) -> List[Tuple[str, State, float]]:
             # BEGIN_YOUR_CODE (our solution is 8 lines of code, but don't worry if you deviate from this)
-            # raise Exception("Not implemented yet")
             successors = []
-            for new_state_label, distance in problem.cityMap.distances[state.location].items():
-                new_state = State(location=new_state_label, memory=state.memory)
-                distance = distance + heuristic.evaluate(new_state) - heuristic.evaluate(state)
-                successors.append((new_state_label, new_state, distance))
+            for action, nextState, cost in problem.successorsAndCosts(state):
+                newCost = cost + heuristic.evaluate(nextState) - heuristic.evaluate(state)
+                successors.append((action, nextState, newCost))
             return successors
             # END_YOUR_CODE
 
@@ -220,22 +206,20 @@ class StraightLineHeuristic(Heuristic):
 
         # Precompute
         # BEGIN_YOUR_CODE (our solution is 5 lines of code, but don't worry if you deviate from this)
-        # raise Exception("Not implemented yet")
-        self.end_geolocation = []
+        self.end_locations = []
         for location, tags in self.cityMap.tags.items():
-            if endTag in tags:
-                self.end_geolocation.append(self.cityMap.geoLocations[location])
+            if self.endTag in tags:
+                self.end_locations.append(location)
+    
         # END_YOUR_CODE
 
     def evaluate(self, state: State) -> float:
         # BEGIN_YOUR_CODE (our solution is 6 lines of code, but don't worry if you deviate from this)
-        # raise Exception("Not implemented yet")
-        state_geolocation = self.cityMap.geoLocations[state.location]
         distances = []
-        for end_geolocation in self.end_geolocation:
-            distances.append(computeDistance(state_geolocation, end_geolocation))
-        straight_line_distance = min(distances)
-        return straight_line_distance
+        for end_location in self.end_locations:
+            distance = computeDistance(self.cityMap.geoLocations[state.location], self.cityMap.geoLocations[end_location])
+            distances.append(distance)
+        return min(distances) if distances else 0
         # END_YOUR_CODE
 
 
@@ -251,26 +235,21 @@ class NoWaypointsHeuristic(Heuristic):
     def __init__(self, endTag: str, cityMap: CityMap):
         # Precompute
         # BEGIN_YOUR_CODE (our solution is 25 lines of code, but don't worry if you deviate from this)
-        # raise Exception("Not implemented yet")
         self.endTag = endTag
         self.cityMap = cityMap
-        self.end_location = []
-        for location, tags in self.cityMap.tags.items():
-            if endTag in tags:
-                self.end_location.append(location)
- 
-        self.loc_costs = {}
-        for loc in self.end_location:
+        self.locations = list(self.cityMap.geoLocations.keys())
+        self.end_locations = [location for location, tags in self.cityMap.tags.items() if self.endTag in tags]
+        self.shortest_paths = {}
+        for location1 in self.end_locations:
+            problem = ShortestPathProblem(location1, "label=0", cityMap)
             ucs = UniformCostSearch()
-            ucs.solve(ShortestPathProblem(loc, "label=0", cityMap))
-            for state_loc, cost in ucs.pastCosts.items():
-                self.loc_costs[(state_loc, loc)] = cost
-        
-        # END_YOUR_CODE
+            ucs.solve(problem)
+            for location2, cost in ucs.pastCosts.items():
+                self.shortest_paths[(location2, location1)] = cost
+                # END_YOUR_CODE
 
     def evaluate(self, state: State) -> float:
         # BEGIN_YOUR_CODE (our solution is 1 line of code, but don't worry if you deviate from this)
-        # raise Exception("Not implemented yet")
-        state_cost = [self.loc_costs[(state.location, end_loc)] for end_loc in self.end_location if (state.location, end_loc) in self.loc_costs and self.loc_costs[(state.location, end_loc)] is not None]
-        return min(state_cost) if state_cost else 0
+        distances = [self.shortest_paths[(state.location, end_location)] for end_location in self.end_locations]
+        return min(distances) if distances else 0
         # END_YOUR_CODE

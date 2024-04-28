@@ -79,7 +79,9 @@ class Gobang(UtilGobang):
         """
 
         # BEGIN_YOUR_CODE (our solution is 3 line of code, but don't worry if you deviate from this)
-
+        black, x_black, y_black = action
+        next_state = copy.deepcopy(self.board)
+        next_state[x_black][y_black] = black
         # END_YOUR_CODE
 
         if noise is not None:
@@ -95,7 +97,8 @@ class Gobang(UtilGobang):
         """
         if self.action_space:
             # BEGIN_YOUR_CODE (our solution is 2 line of code, but don't worry if you deviate from this)
-
+            x, y = random.choice(self.action_space)
+            self.action_space.remove((x, y))
             # END_YOUR_CODE
             return 2, x, y
         else:
@@ -115,7 +118,10 @@ class Gobang(UtilGobang):
         """
 
         # BEGIN_YOUR_CODE (our solution is 4 line of code, but don't worry if you deviate from this)
-
+        black_1, white_1 = self.count_max_connections(self.board)
+        next_state = self.get_next_state(action, noise)
+        black_2, white_2 = self.count_max_connections(next_state)
+        reward = black_2 - black_1 if black_2 > black_1 else white_1 - white_2
         # END_YOUR_CODE
 
         return black_1, white_1, black_2, white_2, reward
@@ -150,8 +156,17 @@ class Gobang(UtilGobang):
         """
 
         # BEGIN_YOUR_CODE (our solution is 8 line of code, but don't worry if you deviate from this)
-
+        if random.random() < eps or self.array_to_hashable(self.board) not in self.Q:
+            x, y = random.choice(self.action_space)
+        else:
+            state = self.array_to_hashable(self.board)
+            if self.Q[state]:
+                _, x, y = max(self.Q[state], key=self.Q[state].get)
+            else:
+                x, y = random.choice(self.action_space)
         # END_YOUR_CODE
+        self.action_space.remove((x, y))
+        action = (1, x, y)
         return action, self.sample_noise()
 
     def q_learning_update(self, s0_: np.array, action: Tuple[int, int, int], s1_: np.array, reward: float,
@@ -174,5 +189,12 @@ class Gobang(UtilGobang):
         alpha = alpha_0 / self.s_a_visited[(s0, action)]
 
         # BEGIN_YOUR_CODE (our solution is 18 line of code, but don't worry if you deviate from this)
-
+        if s0 not in self.Q:
+            self.Q[s0] = {}
+        if action not in self.Q[s0]:
+            self.Q[s0][action] = 0
+        if s1 not in self.Q:
+            self.Q[s1] = {}
+        Q_x1_a1 = max(self.Q[s1].values()) if self.Q[s1] else 0
+        self.Q[s0][action] = (1 - alpha) * self.Q[s0][action] + alpha * (reward + self.gamma * Q_x1_a1)
         # END_YOUR_CODE

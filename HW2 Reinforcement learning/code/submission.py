@@ -121,7 +121,6 @@ class Gobang(UtilGobang):
         black_1, white_1 = self.count_max_connections(self.board)
         next_state = self.get_next_state(action, noise)
         black_2, white_2 = self.count_max_connections(next_state)
-        #reward = black_2 - black_1 if black_2 > black_1 else white_1 - white_2
         reward = (black_2 ** 2 - white_2 ** 2) - (black_1 ** 2 - white_1 ** 2)
         # END_YOUR_CODE
 
@@ -196,15 +195,6 @@ class Gobang(UtilGobang):
             self.Q[s0][action] = 0
         if s1 not in self.Q:
             self.Q[s1] = {}
-        Q_x1_a1 = max(self.Q[s1].values(), default=0) if max(self.Q[s1].values(), default=0) > 0 else 0 
-        '''
-        if np.count_nonzero([a not in [[list(d.keys())[-2:] for d in dict_list] for dict_list in self.Q[s1]] for a in self.action_space]) < len(self.action_space):
-            #print(np.count_nonzero([a not in list(self.array_to_hashable(self.Q[s1])[-2:]) for a in self.action_space]))
-            Q_x1_a1 = max([0] + list(self.Q[s1].keys()))
-        else:
-            print(self.Q[s1].keys())
-            print([item[-2:] for item in self.Q[s1].keys()])
-            Q_x1_a1 = max(self.Q[s1].values(), default=0)
-        '''    
+        Q_x1_a1 = max(self.Q[s1].values(), default=0) if max(self.Q[s1].values(), default=0) > 0 else 0  
         self.Q[s0][action] = (1 - alpha) * self.Q[s0][action] + alpha * (reward + self.gamma * Q_x1_a1)
         # END_YOUR_CODE

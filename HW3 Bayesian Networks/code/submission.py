@@ -52,7 +52,12 @@ class ExactInference:
 
     def observe(self, agentX: int, agentY: int, observedDist: float) -> None:
         # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
+        for i in range(self.belief.getNumRows()):
+            for j in range(self.belief.getNumCols()):
+                dist = math.sqrt((agentX - util.colToX(j))**2 + (agentY - util.rowToY(i))**2)
+                prob = util.pdf(dist, Const.SONAR_STD, observedDist)
+                self.belief.setProb(i, j, self.belief.getProb(i, j) * prob)
+        self.belief.normalize()
         # END_YOUR_CODE
 
     ##################################################################################
@@ -79,8 +84,19 @@ class ExactInference:
         if self.skipElapse: ### ONLY FOR THE GRADER TO USE IN Problem 1
             return
         # BEGIN_YOUR_CODE (our solution is 7 lines of code, but don't worry if you deviate from this)
-        raise Exception("Not implemented yet")
-        # END_YOUR_CODE
+        newBelief = util.Belief(self.belief.getNumRows(), self.belief.getNumCols(), 0)
+        for oldRow in range(self.belief.getNumRows()):
+            for oldCol in range(self.belief.getNumCols()):
+                oldBelief = self.belief.getProb(oldRow, oldCol)
+                
+                for newRow in range(self.belief.getNumRows()):
+                    for newCol in range(self.belief.getNumCols()):
+                        transProb = self.transProb.get(((oldRow, oldCol), (newRow, newCol)), 0)
+                        newBelief.addProb(newRow, newCol, oldBelief * transProb)
+        
+        newBelief.normalize()
+        self.belief = newBelief
+         # END_YOUR_CODE
 
     # Function: Get Belief
     # ---------------------

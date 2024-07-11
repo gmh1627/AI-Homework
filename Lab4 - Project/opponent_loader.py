@@ -14,11 +14,11 @@ bound = 5
 
 def get_opponent():
     # BEGIN YOUR CODE
-    # from submission import GobangModel
-    # opponent = GobangModel(board_size=board_size, bound=bound)
-    # opponent.load_state_dict(torch.load('opponent.pth'))
-    # return opponent
-    raise NotImplementedError("Not implemented!")
+    from submission import GobangModel
+    opponent = GobangModel(board_size=board_size, bound=bound)
+    opponent.load_state_dict(torch.load('F:\\Desktop\\model8\\checkpoints\\model_2999.pth'))
+    return opponent
+
     # END YOUR CODE
 
 

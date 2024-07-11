@@ -13,11 +13,10 @@ bound = 5
 
 
 def get_model():
-    # from submission import GobangModel
-    # model = GobangModel(board_size=board_size, bound=bound)
-    # model.load_state_dict(torch.load('model.pth'))
-    # return model
-    raise NotImplementedError("Not implemented!")
+    from submission import GobangModel
+    model = GobangModel(board_size=board_size, bound=bound)
+    model.load_state_dict(torch.load('checkpoints/model_2999.pth'))
+    return model
 
 
 __all__ = ['get_model']

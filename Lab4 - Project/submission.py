@@ -58,7 +58,30 @@ class Actor(nn.Module):
         """
 
         # BEGIN YOUR CODE
-        raise NotImplementedError("Not Implemented!")
+        '''
+        self.conv_blocks = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Flatten(),
+        )
+        self.linear_blocks = nn.Sequential(
+            nn.Linear(in_features=board_size ** 2 * 128, out_features=board_size ** 2),
+            nn.Softmax(dim=1),
+        )
+        '''
+        self.conv_blocks = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, padding=1),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
+            nn.LeakyReLU(0.01),
+        )
+        self.linear_blocks = nn.Sequential(
+            nn.Linear(in_features=board_size ** 2 * 128, out_features=board_size ** 2),
+            nn.LeakyReLU(0.01),
+            nn.Dropout(0.5),
+        )
         # END YOUR CODE
 
         # Define your optimizer here, which is responsible for calculating the gradients and performing optimizations.
@@ -94,7 +117,31 @@ class Actor(nn.Module):
         # ****************************************
 
         # BEGIN YOUR CODE
-        raise NotImplementedError("Not Implemented!")
+        
+        x_flat = output.flatten(start_dim=2)
+        mask = (x_flat == 0).float()
+        
+        output = self.conv_blocks(output)
+        output = nn.Flatten()(output)
+        output = self.linear_blocks(output)
+        mask = mask.reshape(-1, self.board_size ** 2)
+        output = output.reshape(-1, self.board_size ** 2)
+        
+        output = output * mask
+
+        # 应用softmax，但仅在非零元素上
+        non_zero_mask = output != 0
+
+        # Set zero elements to a very small negative number
+        output_adjusted = torch.where(non_zero_mask, output, torch.tensor(-1e10).to(output.device))
+
+        # Apply softmax to the adjusted tensor
+        softmax_output_adjusted = nn.functional.softmax(output_adjusted, dim=1)
+
+        # Set the originally zero elements back to zero
+        softmax_output_final = torch.where(non_zero_mask, softmax_output_adjusted, output)
+        output = softmax_output_final
+        #print(output)
         # END YOUR CODE
         return output
 
@@ -123,11 +170,23 @@ class Critic(nn.Module):
     def __init__(self, board_size: int, lr=1e-4):
         super().__init__()
         self.board_size = board_size
-        # Define your NN structures here as the same. Torch modules have to be registered during the initialization
-        # process.
+        # Define your NN structures here as the same. Torch modules have to be registered during the initialization process.
 
         # BEGIN YOUR CODE
-        raise NotImplementedError("Not Implemented!")
+        self.conv_layers = nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1),
+            #nn.BatchNorm2d(64),
+            nn.LeakyReLU(0.01),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
+            #nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.01),
+            nn.Flatten(),
+        )
+        self.fc_layers = nn.Sequential(
+            nn.Linear(in_features=board_size ** 2 * 128, out_features=board_size ** 2),
+            nn.LeakyReLU(0.01),
+            nn.Dropout(0.5),
+        )
         # END YOUR CODE
 
         # Define your optimizer here, which is responsible for calculating the gradients and performing optimizations.
@@ -142,7 +201,11 @@ class Critic(nn.Module):
             output = torch.tensor(x).to(device).to(torch.float32)
 
         # BEGIN YOUR CODE
-        raise NotImplementedError("Not Implemented!")
+        output = self.conv_layers(output)
+        q_values = self.fc_layers(output)
+        q_values = q_values.view(-1, self.board_size ** 2)
+        output = q_values.gather(1, indices.unsqueeze(1)).squeeze(1)
+        #print(output)
         # END YOUR CODE
 
         return output
@@ -167,9 +230,9 @@ class GobangModel(nn.Module):
         """
 
         # BEGIN YOUR CODE
-        # self.actor = Actor(board_size=board_size, ...)
-        # self.critic = Critic(board_size=board_size, ...)
-        raise NotImplementedError("Not Implemented!")
+        self.actor = Actor(board_size=board_size)
+        self.critic = Critic(board_size=board_size)
+        
         # END YOUR CODE
 
         self.to(device)
@@ -186,10 +249,9 @@ class GobangModel(nn.Module):
         Using the obtained loss, we can apply optimization algorithms through actor.optimizer and critic.optimizer
         to either maximize the actor's actual objective or minimize the critic's loss.
 
-        There are 3 bugs in the function "optimize" that prevent the model from executing optimizations correctly.
+        There are 2 bugs in the function "optimize" that prevent the model from executing optimizations correctly.
         Identify and debug all errors.
         """
-
         targets = rewards + gamma * next_qs
         critic_loss = nn.MSELoss()(targets, qs)
         indices = torch.tensor([_position_to_index(self.board_size, x, y) for x, y in actions]).to(device)
@@ -198,11 +260,12 @@ class GobangModel(nn.Module):
 
         self.actor.optimizer.zero_grad()
         actor_loss.backward()
+        self.actor.optimizer.step()
 
         self.critic.optimizer.zero_grad()
         critic_loss.backward()
+        self.critic.optimizer.step()
         return actor_loss, critic_loss
-
 
 if __name__ == "__main__":
     agent = GobangModel(board_size=12, bound=5).to(device)
